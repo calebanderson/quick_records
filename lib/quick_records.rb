@@ -1,8 +1,8 @@
-require "quick_records/version"
-require "quick_records/interpreter"
-require "quick_records/record_store"
-require "quick_records/stored_record"
-require "quick_records/railtie"
+require 'quick_records/version'
+require 'quick_records/interpreter'
+require 'quick_records/record_store'
+require 'quick_records/stored_record'
+require 'quick_records/railtie'
 
 module QuickRecords
   class << self

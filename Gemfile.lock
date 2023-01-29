@@ -1,14 +1,14 @@
 PATH
-  remote: ../reactive_console
-  specs:
-    reactive_console (0.1.0)
-      rails (~> 6.1.1)
-
-PATH
   remote: ../reloader_hooks
   specs:
     reloader_hooks (0.1.0)
       rails (>= 4.2)
+
+PATH
+  remote: ../responsive_console
+  specs:
+    responsive_console (0.1.0)
+      rails (~> 6.1.1)
 
 PATH
   remote: ../shared_helpers
@@ -21,7 +21,7 @@ PATH
   specs:
     quick_records (0.1.0)
       rails (>= 4.2)
-      reactive_console
+      responsive_console
       shared_helpers
 
 GEM
@@ -158,8 +158,8 @@ PLATFORMS
 
 DEPENDENCIES
   quick_records!
-  reactive_console!
   reloader_hooks!
+  responsive_console!
   shared_helpers!
   sqlite3
 

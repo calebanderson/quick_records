@@ -7,6 +7,8 @@ module QuickRecords
     config_accessor :lookup_logic
 
     class << self
+      delegate :delete, to: :instance
+
       def clear
         [self, *subclasses].each { |store| store.instance.clear }
       end

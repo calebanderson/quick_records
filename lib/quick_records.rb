@@ -5,6 +5,21 @@ require 'quick_records/stored_record'
 require 'quick_records/railtie'
 
 module QuickRecords
+  ID_HELPER_REGEX = /^(?<klass>\w+?)_?(?<id>\d+)$/.freeze
+  RANDOM_ACTION = /^rand(om)?|roll$/.freeze
+  RESET_RANDOM_ACTION = /^rerand(om)?|reroll$/.freeze
+
+  GREEDY_ACTION_REGEX = %r{
+    ^(?:(?<klass>\w+?)_?
+    (?<action>first|last|(?:re)?(?:roll|rand(?:om)?))
+    |\g<action>_?\g<klass>)$
+  }x.freeze
+  GREEDY_KLASS_REGEX = %r{
+    ^(?:(?<klass>\w+)_?
+    (?<action>first|last|(?:re)?(?:roll|rand(?:om)??))
+    |\g<action>_?\g<klass>)$
+  }x.freeze
+
   class << self
     def clear
       RecordStore.clear
@@ -38,5 +53,26 @@ module QuickRecords
 
   def reload_record_stores
     QuickRecords.reload
+  end
+
+  def method_missing(method_name, *args, &block)
+    catch(:not_handled) do
+      return QuickRecords::Interpreter.record_finder(method_name, &block)
+    end
+    super
+  rescue => e
+    e.backtrace.shift # Remove this from the backtrace
+    raise e
+  end
+
+  def respond_to_missing?(method_name, *)
+    return true if super
+    return false unless [ID_HELPER_REGEX, GREEDY_KLASS_REGEX, GREEDY_ACTION_REGEX].any?(&method_name.method(:match))
+
+    catch(:not_handled) do
+      QuickRecords::Interpreter.record_finder(method_name)
+      return true
+    end
+    false
   end
 end

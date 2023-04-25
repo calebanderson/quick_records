@@ -1,20 +1,5 @@
 module QuickRecords
   module Interpreter
-    ID_HELPER_REGEX = /^(?<klass>\w+?)_?(?<id>\d+)$/.freeze
-    RANDOM_ACTION = /^rand(om)?|roll$/.freeze
-    RESET_RANDOM_ACTION = /^rerand(om)?|reroll$/.freeze
-
-    GREEDY_ACTION_REGEX = %r{
-      ^(?:(?<klass>\w+?)_?
-      (?<action>first|last|(?:re)?(?:roll|rand(?:om)?))
-      |\g<action>_?\g<klass>)$
-    }x.freeze
-    GREEDY_KLASS_REGEX = %r{
-      ^(?:(?<klass>\w+)_?
-      (?<action>first|last|(?:re)?(?:roll|rand(?:om)??))
-      |\g<action>_?\g<klass>)$
-    }x.freeze
-
     class << self
       delegate :[], :[]=, to: :custom_model_map
 
@@ -30,7 +15,8 @@ module QuickRecords
 
       def parse_finder_method(method_name)
         [ID_HELPER_REGEX, GREEDY_KLASS_REGEX, GREEDY_ACTION_REGEX].lazy.map do |regex|
-          klass_name, action_or_id = method_name.match(regex)&.captures || next
+          # Ruby pre-2.4.6 treats Symbol#match as to String#=~ and only returns the index of the match
+          klass_name, action_or_id = method_name.to_s.match(regex)&.captures || next
           klass = finder_klass(klass_name.to_s) || finder_klass(klass_name.to_s.remove('_')) || next
           [klass, action_or_id]
         end.find(&:itself) || throw(:not_handled)
@@ -71,17 +57,6 @@ module QuickRecords
           RandomRecordStore[scope]
         end
       end
-    end
-
-    def method_missing(method_name, *args, &block)
-      catch(:not_handled) do
-        return QuickRecords::Interpreter.record_finder(method_name, &block)
-      end
-      super
-    end
-
-    def respond_to_missing?(method_name, *)
-      [ID_HELPER_REGEX, GREEDY_KLASS_REGEX, GREEDY_ACTION_REGEX].any?(&method_name.method(:match?))
     end
   end
 end
